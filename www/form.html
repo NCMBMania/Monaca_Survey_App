@@ -1,0 +1,75 @@
+<ons-page>
+  <ons-toolbar>
+    <div class="center">入力フォーム</div>
+  </ons-toolbar>
+  <div style="text-align: center; margin-top: 60px;">
+    <ons-row>
+      <ons-col>
+        <input type="hidden" id="objectId" />
+        <textarea id="body" class="textarea" rows="5" cols="40" placeholder="ご意見を入力してください"></textarea>
+      </ons-col>
+    </ons-row>
+    <p style="margin-top: 30px;">
+      <ons-button id="post">目安箱に投稿する</ons-button>
+    </p>
+  </div>
+  <script>
+    (() => {
+      /*
+        初期化時に一度だけ実行されるメソッド
+      */
+      ons.getScriptPage().onInit = async function() {
+        this.querySelector('#post').onclick = () => postSurvey.bind(this)();
+      }
+
+      /*
+        この画面が表示される度に実行されるメソッド
+      */
+      ons.getScriptPage().onShow = async function() {
+        // 匿名認証実行
+        await loginCheck();
+        // 一覧画面からの遷移かどうか判断
+        if (this.data && this.data.objectId) {
+          // 対象のデータを取得
+          const post = await fetchPost(this.data.objectId);
+          this.querySelector('#body').value = post.body;
+          this.querySelector('#objectId').value = post.objectId;
+        }
+      }
+
+      /*
+
+      */
+      async function postSurvey() {
+        const body = this.querySelector('#body');
+        const objectId = this.querySelector('#objectId').value;
+        if (body.value.trim() === '') {
+          ons.notification.alert('ご意見を入力してください');
+          return;
+        }
+        try {
+          await insertPost(body.value, objectId);
+          ons.notification.alert('ご意見ありがとうございました！');
+          body.value = ''; // 入力をリセット
+          if (objectId) {
+            document.querySelector('#nav').resetToPage('view.html');
+          }
+        } catch (e) {
+          ons.notification.alert('エラーが発生しました。もう一度お試しください。');
+        }
+      }
+
+      /*
+        目安箱に投稿 or 更新する処理
+      */
+      async function insertPost(body, objectId) {
+      }
+
+      /*
+        データストアにある投稿データを取得する処理
+      */
+      async function fetchPost(objectId) {
+      }
+    })();
+  </script>
+</ons-page>

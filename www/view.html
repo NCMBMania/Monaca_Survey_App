@@ -1,0 +1,52 @@
+<ons-page>
+  <ons-navigator id="nav">
+    <ons-toolbar>
+      <div class="center">意見閲覧</div>
+    </ons-toolbar>
+    <div style="text-align: center; margin-top: 60px;">
+      <ons-list id="posts">
+      </ons-list>
+    </div>
+  </ons-navigator>
+  <script>
+      /*
+        この画面が表示される度に実行されるメソッド
+      */
+      ons.getScriptPage().onShow = async function() {
+        // 匿名認証実行
+        await loginCheck();
+        // 投稿データの取得
+        const posts = await loadPosts();
+        // 取得した投稿データの表示
+        showPosts.bind(this)(posts);
+      }
+
+      /*
+        目安箱のデータを取得する処理
+      */
+      async function loadPosts() {
+      }
+
+      function showPosts(posts) {
+        // ログインユーザを取得
+        const user = ncmb.User.getCurrentUser();
+        this.querySelector('#posts').innerHTML = '';
+        posts.forEach(p => {
+          const i = document.createElement('ons-list-item');
+          let text = p.body;
+          // データに書き込み権限があるかどうか判断
+          if (p.acl[user.objectId] && p.acl[user.objectId].write) {
+            text = `${p.body} ✏️`;
+            i.setAttribute('tappable', true);
+            // タップした際のイベント設定
+            // form.html （編集画面）に遷移する
+            i.onclick = () => {
+              this.querySelector('#nav').pushPage('form.html', {data: { objectId: p.objectId}});
+            }
+          }
+          i.appendChild(document.createTextNode(text));
+          this.querySelector('#posts').appendChild(i);
+        });
+      }
+  </script>
+</ons-page>
